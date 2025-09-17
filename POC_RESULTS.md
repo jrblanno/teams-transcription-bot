@@ -55,18 +55,27 @@ For the Teams transcription bot to work, the following permissions need to be gr
 | `OnlineMeetings.ReadWrite` | `b8bb2037-6e08-44ac-a4ea-4674e010e2a4` | Read and create online meetings |
 | `User.Read.All` | `df021288-bdef-4463-88db-98f22de89214` | Read user profiles |
 
-## 🚀 Manual Setup Required
+## ✅ Graph API Permissions - Configured via Terraform!
 
-Since we're building a POC and the bot app registration already exists, these steps need to be completed manually:
+The Graph API permissions have now been successfully configured using Terraform's `azuread_application_api_access` resource.
 
-### Step 1: Grant Graph API Permissions
-1. Go to [Azure Portal](https://portal.azure.com)
-2. Navigate to **Azure Active Directory** > **App registrations**
-3. Find app: `babec0f6-0f0f-49e9-90f3-8d195f763274`
-4. Go to **API permissions**
-5. Click **Add a permission** > **Microsoft Graph** > **Application permissions**
-6. Add the 5 permissions listed above
-7. Click **Grant admin consent** for your tenant
+### Permissions Granted Automatically
+The following permissions are now configured on the app registration:
+- ✅ `Calls.AccessMedia.All`
+- ✅ `Calls.JoinGroupCall.All`
+- ✅ `Calls.InitiateGroupCall.All`
+- ✅ `OnlineMeetings.ReadWrite.All`
+- ✅ `User.Read.All`
+
+### Admin Consent Still Required
+While the permissions have been added to the app registration, **admin consent is still required**.
+
+Grant admin consent via:
+1. Azure Portal: Navigate to the app registration and click "Grant admin consent"
+2. Or use this direct URL:
+   ```
+   https://login.microsoftonline.com/c556291d-38d5-4f30-9e13-52bd4ceb2a07/adminconsent?client_id=babec0f6-0f0f-49e9-90f3-8d195f763274
+   ```
 
 ### Step 2: Verify Permissions
 Run the test again:
