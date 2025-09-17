@@ -1,0 +1,86 @@
+# Terraform Variables Configuration Template
+# Copy this file to terraform.tfvars and fill in your values
+# Never commit terraform.tfvars to version control!
+
+# Basic Configuration
+environment         = "dev"
+location           = "East US"
+project_name       = "teamsbot"
+resource_group_name = "" # Leave empty to auto-generate
+
+# Azure AD Application Registration
+# These values come from your Azure AD app registration
+# NEVER hardcode these values - load from environment or use Key Vault
+bot_app_id          = ""  # Azure Bot App ID
+bot_app_password    = ""  # Azure Bot App Password
+azure_client_id     = ""  # Azure AD App Client ID
+azure_client_secret = ""  # Azure AD App Client Secret
+azure_tenant_id     = ""  # Azure AD Tenant ID
+
+# Service SKUs and Pricing Tiers
+# Adjust based on environment and budget requirements
+
+# App Service Plan SKU
+# Options: B1, B2, B3 (Basic), S1, S2, S3 (Standard), P1v2, P2v2, P3v2 (Premium)
+app_service_sku = "B1"  # Basic tier for dev/test
+
+# Cognitive Services Speech API SKU
+# Options: F0 (Free tier, limited), S0 (Standard tier, production)
+speech_service_sku = "F0"  # Free tier for development
+
+# Storage Configuration
+storage_account_tier             = "Standard"  # Standard or Premium
+storage_account_replication_type = "LRS"       # LRS, GRS, RAGRS, ZRS, GZRS, RAGZRS
+
+# Security and Networking
+enable_private_endpoints = false  # Set to true for production environments
+allowed_ip_ranges       = []     # Add your IP ranges for access control
+
+# Resource Tagging
+# Add custom tags for cost tracking and organization
+tags = {
+  Owner        = "DevOps Team"
+  Project      = "Teams Transcription Bot"
+  Environment  = "Development"
+  CostCenter   = "IT-Operations"
+  Department   = "Engineering"
+  Application  = "teams-bot"
+
+  # Add custom tags as needed
+  # "backup-policy"    = "daily"
+  # "data-class"      = "internal"
+  # "compliance"      = "standard"
+}
+
+# Environment-specific examples:
+
+# Development Environment
+# =====================
+# environment = "dev"
+# app_service_sku = "B1"
+# speech_service_sku = "F0"
+# storage_account_replication_type = "LRS"
+# enable_private_endpoints = false
+# Estimated monthly cost: ~$15-25
+
+# Staging Environment
+# =================
+# environment = "staging"
+# app_service_sku = "B2"
+# speech_service_sku = "S0"
+# storage_account_replication_type = "LRS"
+# enable_private_endpoints = false
+# Estimated monthly cost: ~$105-115
+
+# Production Environment
+# ====================
+# environment = "prod"
+# app_service_sku = "P1v2"
+# speech_service_sku = "S0"
+# storage_account_replication_type = "GRS"
+# enable_private_endpoints = true
+# allowed_ip_ranges = ["10.0.0.0/16", "192.168.1.0/24"]
+# Estimated monthly cost: ~$135-150
+
+# Note: Actual costs may vary based on usage patterns and Azure pricing changes.
+# Use Azure Pricing Calculator for more precise estimates.
