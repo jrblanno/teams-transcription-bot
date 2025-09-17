@@ -1,0 +1,24 @@
+# Development Dependencies for Teams Transcription Bot
+
+# Testing
+pytest==7.4.0
+pytest-asyncio==0.21.0
+pytest-cov==4.1.0
+
+# Code Quality
+black==23.7.0
+flake8==6.1.0
+mypy==1.5.0
+
+# Type Stubs
+types-requests
+types-aiofiles
+
+# Documentation (optional)
+sphinx==7.0.0
+sphinx-rtd-theme==1.3.0
+
+# Development Tools
+ipython==8.14.0
+ipdb==0.13.13
+pre-commit==3.3.3
