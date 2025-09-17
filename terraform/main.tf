@@ -236,3 +236,10 @@ resource "azurerm_role_assignment" "app_service_cognitive_services" {
     module.app_service
   ]
 }
+
+# Azure AD App Registration with Graph API permissions
+module "azure_ad" {
+  source = "./modules/azure_ad"
+
+  bot_app_id = var.bot_app_id
+}
