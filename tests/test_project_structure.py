@@ -17,8 +17,12 @@ class TestProjectStructure:
         required_files = [
             "README.md",
             "requirements.txt",
+            "requirements-dev.txt",
             "setup.py",
+            "pyproject.toml",
             ".gitignore",
+            ".env.example",
+            "CLAUDE.md"
         ]
 
         for file_name in required_files:
@@ -34,12 +38,15 @@ class TestProjectStructure:
         # Check for __init__.py in src
         assert (src_path / "__init__.py").exists(), "src/__init__.py does not exist"
 
-        # Check required modules
+        # Check required modules (all from issue requirements)
         required_modules = [
             "bot",
             "audio",
             "transcription",
-            "graph_api"
+            "graph_api",
+            "storage",
+            "teams",
+            "monitoring"
         ]
 
         for module_name in required_modules:
@@ -54,12 +61,27 @@ class TestProjectStructure:
         assert terraform_path.exists(), "terraform directory does not exist"
         assert terraform_path.is_dir(), "terraform must be a directory"
 
+    def test_docs_directory_exists(self):
+        """Test that docs directory exists"""
+        docs_path = PROJECT_ROOT / "docs"
+        assert docs_path.exists(), "docs directory does not exist"
+        assert docs_path.is_dir(), "docs must be a directory"
+
     def test_tests_directory_structure(self):
         """Test that tests directory exists and is properly structured"""
         tests_path = PROJECT_ROOT / "tests"
         assert tests_path.exists(), "tests directory does not exist"
         assert tests_path.is_dir(), "tests must be a directory"
         assert (tests_path / "__init__.py").exists(), "tests/__init__.py does not exist"
+        assert (tests_path / "conftest.py").exists(), "tests/conftest.py does not exist"
+
+        # Check for test subdirectories
+        subdirs = ["unit", "integration"]
+        for subdir in subdirs:
+            subdir_path = tests_path / subdir
+            assert subdir_path.exists(), f"tests/{subdir} directory does not exist"
+            assert subdir_path.is_dir(), f"tests/{subdir} must be a directory"
+            assert (subdir_path / "__init__.py").exists(), f"tests/{subdir}/__init__.py does not exist"
 
     def test_python_package_importable(self):
         """Test that src package is importable"""
@@ -107,6 +129,45 @@ class TestProjectStructure:
 
         for package in required_packages:
             assert package in content, f"Required package {package} not in requirements.txt"
+
+    def test_requirements_dev_txt_valid(self):
+        """Test that requirements-dev.txt contains development dependencies"""
+        req_dev_path = PROJECT_ROOT / "requirements-dev.txt"
+        assert req_dev_path.exists(), "requirements-dev.txt does not exist"
+
+        with open(req_dev_path, 'r') as f:
+            content = f.read()
+
+        # Check for essential dev dependencies mentioned in the issue
+        dev_packages = [
+            "pytest",
+            "pytest-asyncio",
+            "pytest-cov",
+            "black",
+            "flake8",
+            "mypy",
+        ]
+
+        for package in dev_packages:
+            assert package in content, f"Development package {package} not in requirements-dev.txt"
+
+    def test_pyproject_toml_configured(self):
+        """Test that pyproject.toml is properly configured"""
+        pyproject_path = PROJECT_ROOT / "pyproject.toml"
+        assert pyproject_path.exists(), "pyproject.toml does not exist"
+
+        with open(pyproject_path, 'r') as f:
+            content = f.read()
+
+        # Check for essential configuration sections
+        required_sections = [
+            "[tool.black]",
+            "[tool.mypy]",
+            "[tool.pytest.ini_options]",
+        ]
+
+        for section in required_sections:
+            assert section in content, f"Configuration section {section} not in pyproject.toml"
 
     def test_gitignore_configured(self):
         """Test that .gitignore is properly configured for Python projects"""
@@ -183,6 +244,45 @@ class TestModuleInitialization:
             assert src.graph_api is not None
         except ImportError as e:
             pytest.fail(f"Cannot import graph_api module: {e}")
+
+    def test_storage_module_structure(self):
+        """Test storage module has expected structure"""
+        storage_path = PROJECT_ROOT / "src" / "storage"
+        assert storage_path.exists(), "storage module does not exist"
+
+        # Storage module should be importable
+        sys.path.insert(0, str(PROJECT_ROOT))
+        try:
+            import src.storage
+            assert src.storage is not None
+        except ImportError as e:
+            pytest.fail(f"Cannot import storage module: {e}")
+
+    def test_teams_module_structure(self):
+        """Test teams module has expected structure"""
+        teams_path = PROJECT_ROOT / "src" / "teams"
+        assert teams_path.exists(), "teams module does not exist"
+
+        # Teams module should be importable
+        sys.path.insert(0, str(PROJECT_ROOT))
+        try:
+            import src.teams
+            assert src.teams is not None
+        except ImportError as e:
+            pytest.fail(f"Cannot import teams module: {e}")
+
+    def test_monitoring_module_structure(self):
+        """Test monitoring module has expected structure"""
+        monitoring_path = PROJECT_ROOT / "src" / "monitoring"
+        assert monitoring_path.exists(), "monitoring module does not exist"
+
+        # Monitoring module should be importable
+        sys.path.insert(0, str(PROJECT_ROOT))
+        try:
+            import src.monitoring
+            assert src.monitoring is not None
+        except ImportError as e:
+            pytest.fail(f"Cannot import monitoring module: {e}")
 
 
 if __name__ == "__main__":
