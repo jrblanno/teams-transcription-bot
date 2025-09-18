@@ -7,7 +7,7 @@ from botbuilder.schema import ChannelAccount
 import aiohttp
 import asyncio
 from datetime import datetime
-from src.transcription.simple_transcriber import SimpleSpeechTranscriber
+from src.transcription.teams_multilingual_transcriber import TeamsMultilingualTranscriber
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class TeamsTranscriptionBot(ActivityHandler):
     def __init__(self):
         super().__init__()
         self.active_call: Optional[Dict[str, Any]] = None
-        self.transcriber: Optional['SimpleSpeechTranscriber'] = None
+        self.transcriber: Optional['TeamsMultilingualTranscriber'] = None
         self.transcript_entries: List[Dict[str, Any]] = []
         self.graph_token: Optional[str] = None
 
@@ -65,14 +65,15 @@ class TeamsTranscriptionBot(ActivityHandler):
             # Join the Teams call via Graph API
             await self._join_teams_call_via_graph(meeting_url)
 
-            # Initialize Speech-to-Text transcriber with callback
-            self.transcriber = SimpleSpeechTranscriber(
+            # Initialize multilingual Speech-to-Text transcriber with callback
+            self.transcriber = TeamsMultilingualTranscriber(
+                language='auto',  # Auto-detect Spanish, German, English
                 on_transcription_callback=self.on_transcription_received
             )
             await self.transcriber.start_transcription()
 
             await turn_context.send_activity(
-                f"✅ Joined call and started transcription with speaker diarization."
+                f"✅ Joined call and started multilingual transcription (🇪🇸 🇩🇪 🇺🇸) with speaker diarization."
             )
             logger.info(f"Bot joined call: {meeting_url}")
 
@@ -106,13 +107,36 @@ class TeamsTranscriptionBot(ActivityHandler):
             return
 
         try:
-            # Stop transcription
+            # Stop transcription and save files
+            session_summary = {}
+            saved_files = []
             if self.transcriber:
-                await self.transcriber.stop_transcription()
+                session_summary = await self.transcriber.stop_transcription()
+                result = await self.transcriber.save_transcript_files()
+                if result and len(result) >= 2:
+                    json_file, txt_file = result[0], result[1]
+                    saved_files = [txt_file, json_file]
+                    # Check if audio file was also saved
+                    if len(result) > 2 and result[2]:
+                        audio_file = result[2]
+                        saved_files.append(audio_file)
                 self.transcriber = None
 
-            # Save transcript
-            transcript_summary = f"Transcript saved with {len(self.transcript_entries)} entries."
+            # Prepare transcript summary
+            total_segments = session_summary.get('total_segments', len(self.transcript_entries))
+            total_speakers = session_summary.get('total_speakers', 0)
+            languages = session_summary.get('languages_detected', [])
+
+            # Include file information in summary
+            files_info = f"📄 Files saved: {len(saved_files)} files" if saved_files else "No files saved"
+            has_audio = any("wav" in str(f) for f in saved_files)
+            audio_info = " (🎵 includes audio)" if has_audio else ""
+
+            transcript_summary = (
+                f"📝 Transcript saved: {total_segments} segments, {total_speakers} speakers\n"
+                f"🌍 Languages detected: {', '.join(languages) if languages else 'None'}\n"
+                f"{files_info}{audio_info}"
+            )
 
             # Clear state
             self.active_call = None
@@ -130,12 +154,27 @@ class TeamsTranscriptionBot(ActivityHandler):
     async def _handle_status(self, turn_context: TurnContext) -> None:
         """Report current bot status."""
         if self.active_call:
+            # Get current transcription stats if available
+            segments_count = len(self.transcript_entries)
+            speakers_count = 0
+            languages = []
+
+            if self.transcriber and hasattr(self.transcriber, 'transcript_segments'):
+                segments_count = len(self.transcriber.transcript_segments)
+                speakers_count = self.transcriber.speaker_counter
+                languages = list(set([
+                    seg.get("detected_language", "unknown")
+                    for seg in self.transcriber.transcript_segments
+                ]))
+
             status = (
                 f"📞 In call since: {self.active_call['joined_at']}\n"
-                f"📝 Transcript entries: {len(self.transcript_entries)}"
+                f"📝 Transcript: {segments_count} segments, {speakers_count} speakers\n"
+                f"🌍 Languages detected: {', '.join(languages) if languages else 'None'}\n"
+                f"🎯 Multilingual mode: Spanish 🇪🇸 German 🇩🇪 English 🇺🇸"
             )
         else:
-            status = "🔴 Not in a call"
+            status = "🔴 Not in a call\n🎯 Ready for multilingual transcription (🇪🇸 🇩🇪 🇺🇸)"
 
         await turn_context.send_activity(status)
 

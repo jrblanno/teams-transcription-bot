@@ -18,13 +18,22 @@ class TestTeamsTranscriptionBotMVP:
         turn_context.activity.text = f"/join {meeting_url}"
         turn_context.send_activity = AsyncMock()
 
-        # Act
-        await bot.on_message_activity(turn_context)
+        # Mock the Azure dependencies
+        with patch('src.bot.teams_bot.AzureSpeechTranscriber') as MockTranscriber:
+            mock_transcriber = MockTranscriber.return_value
+            mock_transcriber.start_transcription = AsyncMock()
 
-        # Assert
-        turn_context.send_activity.assert_called()
-        assert bot.active_call is not None
-        assert bot.active_call["meeting_url"] == meeting_url
+            with patch('src.auth.msal_client.MSALAuthClient') as MockAuth:
+                mock_auth = MockAuth.return_value
+                mock_auth.get_token.return_value = "mock_token"
+
+                # Act
+                await bot.on_message_activity(turn_context)
+
+                # Assert
+                turn_context.send_activity.assert_called()
+                assert bot.active_call is not None
+                assert bot.active_call["meeting_url"] == meeting_url
 
     @pytest.mark.asyncio
     async def test_bot_starts_transcription_on_join(self):
@@ -33,20 +42,24 @@ class TestTeamsTranscriptionBotMVP:
         bot = TeamsTranscriptionBot()
         meeting_url = "https://teams.microsoft.com/l/meetup-join/19:meeting_abc123"
 
-        with patch('src.bot.teams_bot.SimpleSpeechTranscriber') as MockTranscriber:
+        with patch('src.bot.teams_bot.AzureSpeechTranscriber') as MockTranscriber:
             mock_transcriber = MockTranscriber.return_value
             mock_transcriber.start_transcription = AsyncMock()
 
-            turn_context = Mock()
-            turn_context.activity.text = f"/join {meeting_url}"
-            turn_context.send_activity = AsyncMock()
+            with patch('src.auth.msal_client.MSALAuthClient') as MockAuth:
+                mock_auth = MockAuth.return_value
+                mock_auth.get_token.return_value = "mock_token"
 
-            # Act
-            await bot.on_message_activity(turn_context)
+                turn_context = Mock()
+                turn_context.activity.text = f"/join {meeting_url}"
+                turn_context.send_activity = AsyncMock()
 
-            # Assert
-            mock_transcriber.start_transcription.assert_called_once()
-            assert bot.transcriber is not None
+                # Act
+                await bot.on_message_activity(turn_context)
+
+                # Assert
+                mock_transcriber.start_transcription.assert_called_once()
+                assert bot.transcriber is not None
 
     @pytest.mark.asyncio
     async def test_bot_handles_audio_stream(self):
@@ -55,7 +68,7 @@ class TestTeamsTranscriptionBotMVP:
         bot = TeamsTranscriptionBot()
         audio_data = b"mock_audio_data"
 
-        with patch('src.bot.teams_bot.SimpleSpeechTranscriber') as MockTranscriber:
+        with patch('src.bot.teams_bot.AzureSpeechTranscriber') as MockTranscriber:
             mock_transcriber = MockTranscriber.return_value
             mock_transcriber.process_audio = AsyncMock()
             bot.transcriber = mock_transcriber

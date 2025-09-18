@@ -62,10 +62,15 @@ variable "bot_app_password" {
 
 data "azurerm_client_config" "current" {}
 
-# Use existing Cognitive Services for Speech-to-Text
-data "azurerm_cognitive_account" "existing_speech" {
-  name                = "cog-demo-aab"
-  resource_group_name = "rg-et-td-ta-ragpoc-cb"
+# Create Azure Speech Service for transcription
+resource "azurerm_cognitive_account" "speech_service" {
+  name                = "${var.project_name}-speech"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+  kind                = "SpeechServices"
+  sku_name            = "F0"  # Free tier
+
+  tags = azurerm_resource_group.main.tags
 }
 
 # Data source for Microsoft Graph (for permissions)
@@ -128,13 +133,13 @@ resource "azurerm_key_vault_secret" "bot_app_password" {
 # Store Speech Service keys in Key Vault
 resource "azurerm_key_vault_secret" "speech_key" {
   name         = "azure-speech-key"
-  value        = data.azurerm_cognitive_account.existing_speech.primary_access_key
+  value        = azurerm_cognitive_account.speech_service.primary_access_key
   key_vault_id = azurerm_key_vault.main.id
 }
 
 resource "azurerm_key_vault_secret" "speech_endpoint" {
   name         = "azure-speech-endpoint"
-  value        = data.azurerm_cognitive_account.existing_speech.endpoint
+  value        = azurerm_cognitive_account.speech_service.endpoint
   key_vault_id = azurerm_key_vault.main.id
 }
 
@@ -231,7 +236,7 @@ resource "azurerm_role_assignment" "current_user_keyvault_admin" {
 
 # Grant App Service access to Cognitive Services
 resource "azurerm_role_assignment" "app_service_cognitive" {
-  scope                = data.azurerm_cognitive_account.existing_speech.id
+  scope                = azurerm_cognitive_account.speech_service.id
   role_definition_name = "Cognitive Services User"
   principal_id         = azurerm_linux_web_app.main.identity[0].principal_id
 
@@ -320,7 +325,7 @@ output "bot_service_name" {
 }
 
 output "speech_service_endpoint" {
-  value = data.azurerm_cognitive_account.existing_speech.endpoint
+  value = azurerm_cognitive_account.speech_service.endpoint
 }
 
 output "admin_consent_url" {

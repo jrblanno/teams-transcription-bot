@@ -1,0 +1,34 @@
+{
+  "session_id": "teams_multilingual_20250918_104105",
+  "start_time": "2025-09-18T10:41:05.503237+00:00",
+  "end_time": "2025-09-18T10:41:35.934983+00:00",
+  "language_setting": "auto",
+  "source": "teams_meeting",
+  "segments": [
+    {
+      "segment_id": 1,
+      "speaker_id": "Speaker_1",
+      "text": "Económica, no, por por eso nosotros por favor, hasta que alcemos 20 años o impuestos 10 años, impuestos 10 años, creo de la calle da mucho coraje, güey, esto pagas mucho. Esa es la única razón por la que emputa pagar mucho de impuestos, que no sabes bien a dónde van y luego ves todos los escándalos así de las mismas en si ya te los vimos con su.",
+      "detected_language": "es-ES",
+      "start_time": "2025-09-18T10:41:27.589874+00:00",
+      "confidence": 0.95,
+      "duration_ms": 18720,
+      "offset_ms": 670
+    },
+    {
+      "segment_id": 2,
+      "speaker_id": "Speaker_2",
+      "text": "¿Hijo de **** no mames, pero no me vaya yo atrasando un **** mes porque me caen, verdad? Chingue peorca, perro, mami Brice, ahí andas, güey.",
+      "detected_language": "es-ES",
+      "start_time": "2025-09-18T10:41:35.934674+00:00",
+      "confidence": 0.95,
+      "duration_ms": 8360,
+      "offset_ms": 21000
+    }
+  ],
+  "total_segments": 2,
+  "total_speakers": 2,
+  "languages_detected": [
+    "es-ES"
+  ]
+}
