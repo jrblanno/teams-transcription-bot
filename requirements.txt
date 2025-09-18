@@ -8,9 +8,15 @@ msal==1.24.0
 # Azure Services
 azure-cognitiveservices-speech==1.32.0
 azure-storage-blob==12.19.0
+azure-identity==1.15.0
+azure-keyvault-secrets==4.7.0
+azure-mgmt-web==7.2.0
+azure-mgmt-botservice==2.0.0
+azure-mgmt-resource==23.0.0
 
 # Web Framework & Async Support
 aiohttp==3.8.5
+flask==2.3.3
 
 # Configuration Management
 python-dotenv==1.0.0

@@ -1,0 +1,44 @@
+{
+  "session_id": "multilingual_20250918_103035",
+  "start_time": "2025-09-18T10:30:35.833723+00:00",
+  "language_setting": "auto",
+  "source": "microphone_multilingual",
+  "segments": [
+    {
+      "segment_id": 1,
+      "speaker_id": "Speaker_1",
+      "text": "Directamente contra el chocolate y bienestar con nuestro chocolate con 9 sellos. Agárrate, Agárrate, Claudia, estamos viendo el video de Youtube, están aplaudiendo, we are speak, i am speaking in English, the recording, a little, bad Betty, my name is One.",
+      "detected_language": "es-ES",
+      "start_time": "2025-09-18T10:30:51.505759+00:00",
+      "confidence": 0.95,
+      "duration_ms": 14600,
+      "offset_ms": 150
+    },
+    {
+      "segment_id": 2,
+      "speaker_id": "Speaker_2",
+      "text": "How many speakers video things and important questions. ¿Ellos están hablando en español, cuántos personajes hay hablando en el video de Youtube?",
+      "detected_language": "es-ES",
+      "start_time": "2025-09-18T10:30:59.916003+00:00",
+      "confidence": 0.95,
+      "duration_ms": 7960,
+      "offset_ms": 15230
+    },
+    {
+      "segment_id": 3,
+      "speaker_id": "Speaker_3",
+      "text": "Me gustaría tener el recording completo de la transcripción, quiero ver qué está pasando.",
+      "detected_language": "es-ES",
+      "start_time": "2025-09-18T10:31:06.110547+00:00",
+      "confidence": 0.95,
+      "duration_ms": 5680,
+      "offset_ms": 24190
+    }
+  ],
+  "end_time": "2025-09-18T10:31:06.110606+00:00",
+  "total_segments": 3,
+  "total_speakers": 3,
+  "languages_detected": [
+    "es-ES"
+  ]
+}

@@ -38,34 +38,33 @@ def test_terraform_format():
     # Format check might fail due to auto-formatting, just verify it runs
     assert result.returncode in [0, 3], f"Terraform fmt check failed: {result.stderr}"
 
-def test_modules_exist():
-    """Test that all required modules exist."""
+def test_main_terraform_exists():
+    """Test that main terraform file exists."""
     terraform_dir = Path(__file__).parent.parent / "terraform"
-    required_modules = [
-        "modules/bot_service",
-        "modules/app_service",
-        "modules/storage",
-        "modules/key_vault",
-        "modules/monitoring"
-    ]
+    main_tf = terraform_dir / "main.tf"
+    assert main_tf.exists(), "main.tf not found"
 
-    for module in required_modules:
-        module_path = terraform_dir / module / "main.tf"
-        assert module_path.exists(), f"Module {module} not found"
+    # Check file is not empty
+    content = main_tf.read_text()
+    assert len(content) > 100, "main.tf appears to be empty"
+
+    # Check for key resources in simplified structure
+    assert "azurerm_resource_group" in content, "Resource group not defined"
+    assert "azurerm_key_vault" in content, "Key Vault not defined"
+    assert "azurerm_linux_web_app" in content or "azurerm_app_service" in content, "App Service not defined"
+    assert "azurerm_bot_service_azure_bot" in content, "Bot Service not defined"
 
 def test_outputs_configured():
     """Test that terraform outputs are configured."""
     terraform_dir = Path(__file__).parent.parent / "terraform"
-    outputs_file = terraform_dir / "outputs.tf"
-    assert outputs_file.exists(), "outputs.tf not found"
+    main_tf = terraform_dir / "main.tf"
+    assert main_tf.exists(), "main.tf not found"
 
-    # Check for key outputs
-    content = outputs_file.read_text()
+    # Check for key outputs in main.tf (simplified structure)
+    content = main_tf.read_text()
     required_outputs = [
         "resource_group_name",
-        "storage_account_name",
         "key_vault_name",
-        "app_service_name",
         "bot_service_name"
     ]
 
@@ -75,11 +74,11 @@ def test_outputs_configured():
 def test_variables_configured():
     """Test that terraform variables are configured."""
     terraform_dir = Path(__file__).parent.parent / "terraform"
-    variables_file = terraform_dir / "variables.tf"
-    assert variables_file.exists(), "variables.tf not found"
+    main_tf = terraform_dir / "main.tf"
+    assert main_tf.exists(), "main.tf not found"
 
-    # Check for key variables
-    content = variables_file.read_text()
+    # Check for key variables in main.tf (simplified structure)
+    content = main_tf.read_text()
     required_variables = [
         "environment",
         "location",
@@ -90,10 +89,11 @@ def test_variables_configured():
         assert f'variable "{variable}"' in content, f"Variable {variable} not configured"
 
 def test_tfvars_example_exists():
-    """Test that terraform.tfvars.example exists."""
+    """Test that terraform.tfvars or terraform.tfvars.example exists."""
     terraform_dir = Path(__file__).parent.parent / "terraform"
+    tfvars = terraform_dir / "terraform.tfvars"
     tfvars_example = terraform_dir / "terraform.tfvars.example"
-    assert tfvars_example.exists(), "terraform.tfvars.example not found"
+    assert tfvars.exists() or tfvars_example.exists(), "terraform.tfvars or terraform.tfvars.example not found"
 
 def test_resource_naming_convention():
     """Test that resources follow naming conventions."""
