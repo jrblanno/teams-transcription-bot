@@ -73,6 +73,37 @@ resource "azurerm_cognitive_account" "speech_service" {
   tags = azurerm_resource_group.main.tags
 }
 
+# =============================================================================
+# STORAGE ACCOUNT - Transcript storage
+# =============================================================================
+
+resource "azurerm_storage_account" "transcripts" {
+  name                     = "${var.project_name}${var.environment}storage"
+  resource_group_name      = azurerm_resource_group.main.name
+  location                 = azurerm_resource_group.main.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  account_kind             = "StorageV2"
+
+  # Enable blob features for transcript management
+  blob_properties {
+    versioning_enabled = true
+    delete_retention_policy {
+      days = 30
+    }
+    change_feed_enabled = true
+  }
+
+  tags = azurerm_resource_group.main.tags
+}
+
+# Blob container for storing transcripts
+resource "azurerm_storage_container" "transcripts" {
+  name                  = "transcripts"
+  storage_account_name  = azurerm_storage_account.transcripts.name
+  container_access_type = "private"
+}
+
 # Data source for Microsoft Graph (for permissions)
 data "azuread_application_published_app_ids" "well_known" {}
 
@@ -209,6 +240,10 @@ resource "azurerm_linux_web_app" "main" {
     "AZURE_SPEECH_ENDPOINT" = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.main.name};SecretName=azure-speech-endpoint)"
     "AZURE_SPEECH_REGION"   = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.main.name};SecretName=azure-speech-region)"
 
+    # Azure Storage settings
+    "AZURE_STORAGE_ACCOUNT_NAME"   = azurerm_storage_account.transcripts.name
+    "AZURE_STORAGE_CONTAINER_NAME" = azurerm_storage_container.transcripts.name
+
     # Python settings
     "PYTHONPATH"                     = "/home/site/wwwroot"
     "SCM_DO_BUILD_DURING_DEPLOYMENT" = "1"
@@ -238,6 +273,15 @@ resource "azurerm_role_assignment" "current_user_keyvault_admin" {
 resource "azurerm_role_assignment" "app_service_cognitive" {
   scope                = azurerm_cognitive_account.speech_service.id
   role_definition_name = "Cognitive Services User"
+  principal_id         = azurerm_linux_web_app.main.identity[0].principal_id
+
+  depends_on = [azurerm_linux_web_app.main]
+}
+
+# Grant App Service access to Storage Account
+resource "azurerm_role_assignment" "app_service_storage" {
+  scope                = azurerm_storage_account.transcripts.id
+  role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_linux_web_app.main.identity[0].principal_id
 
   depends_on = [azurerm_linux_web_app.main]
@@ -332,4 +376,14 @@ output "admin_consent_url" {
   value = "https://login.microsoftonline.com/${data.azurerm_client_config.current.tenant_id}/adminconsent?client_id=${var.bot_app_id}"
   description = "URL to grant admin consent for Graph API permissions"
   sensitive   = true
+}
+
+output "storage_account_name" {
+  value = azurerm_storage_account.transcripts.name
+  description = "Azure Storage Account name for transcripts"
+}
+
+output "storage_container_name" {
+  value = azurerm_storage_container.transcripts.name
+  description = "Azure Storage Container name for transcripts"
 }
